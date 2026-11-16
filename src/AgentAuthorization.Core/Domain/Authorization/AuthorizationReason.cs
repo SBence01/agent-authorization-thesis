@@ -1,5 +1,7 @@
 using System.ComponentModel;
 
+namespace AgentAuthorization.Core.Domain.Authorization;
+
 public enum AuthorizationReason
 {
     [Description("The operation was authorized.")]

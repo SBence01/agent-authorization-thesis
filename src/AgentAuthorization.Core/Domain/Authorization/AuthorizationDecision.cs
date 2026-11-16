@@ -1,3 +1,5 @@
+namespace AgentAuthorization.Core.Domain.Authorization;
+
 public sealed record AuthorizationDecision
 {
     public bool IsAllowed { get; }
