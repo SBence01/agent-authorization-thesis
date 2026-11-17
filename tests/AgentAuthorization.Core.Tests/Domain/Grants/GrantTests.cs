@@ -6,8 +6,9 @@ namespace AgentAuthorization.Core.Tests.Domain.Grants;
 
 public sealed class GrantTests
 {
+
     [Fact]
-    public void Constructor_WhenExpirationIsBeforaValidFrom_ShowlThrow()
+    public void Constructor_WhenExpirationIsBeforeValidFrom_ShouldThrow()
     {
         //Arrange
         var validFrom = DateTime.UtcNow;
@@ -97,5 +98,90 @@ public sealed class GrantTests
         Assert.Equal(scope, grant.Scope);
         Assert.Equal(validFrom, grant.ValidFrom);
         Assert.Equal(expiresAt, grant.ExpiresAt);
+    }
+
+    [Fact]
+    public void Constructor_WhenGrantIdIsEmpty_ShouldThrow()
+    {
+        //Arrange
+        var now = DateTimeOffset.UtcNow;
+
+        //Assert
+        Assert.Throws<ArgumentException>(() => new Grant(
+            Guid.Empty,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            ImmutableHashSet.Create(ResourceAction.Read),
+            new ProjectScope(Guid.NewGuid()),
+            now,
+            now.AddHours(1)));
+    }
+
+    [Fact]
+    public void Constructor_WhenAgentIdIsEmpty_ShouldThrow()
+    {
+        //Arrange
+        var now = DateTimeOffset.UtcNow;
+
+        //Assert
+        Assert.Throws<ArgumentException>(() => new Grant(
+            Guid.NewGuid(),
+            Guid.Empty,
+            Guid.NewGuid(),
+            ImmutableHashSet.Create(ResourceAction.Read),
+            new ProjectScope(Guid.NewGuid()),
+            now,
+            now.AddHours(1)));
+    }
+
+    [Fact]
+    public void Constructor_WhenWorkflowIdIsEmpty_ShouldThrow()
+    {
+        //Arrange
+        var now = DateTimeOffset.UtcNow;
+
+        //Assert
+        Assert.Throws<ArgumentException>(() => new Grant(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.Empty,
+            ImmutableHashSet.Create(ResourceAction.Read),
+            new ProjectScope(Guid.NewGuid()),
+            now,
+            now.AddHours(1)));
+    }
+
+    [Fact]
+    public void Constructor_WhenScopeIsNull_ShouldThrow()
+    {
+        //Arrange
+        var now = DateTimeOffset.UtcNow;
+
+        //Assert
+        Assert.Throws<ArgumentNullException>(() => new Grant(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            ImmutableHashSet.Create(ResourceAction.Read),
+            null!,
+            now,
+            now.AddHours(1)));
+    }
+
+    [Fact]
+    public void Constructor_WhenAllowedActionsContainsUndefinedValue_ShouldThrow()
+    {
+        //Arrange
+        var now = DateTimeOffset.UtcNow;
+        var actions = ImmutableHashSet.Create(ResourceAction.Read, (ResourceAction)999);
+
+        Assert.Throws<ArgumentException>(() => new Grant(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            actions,
+            new ProjectScope(Guid.NewGuid()),
+            now,
+            now.AddHours(1)));
     }
 }

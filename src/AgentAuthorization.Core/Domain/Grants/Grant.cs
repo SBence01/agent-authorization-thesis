@@ -41,6 +41,11 @@ namespace AgentAuthorization.Core.Domain.Grants
                 throw new ArgumentException("Allowed actions cannot be null or empty.", nameof(allowedActions));
             }
 
+            if (allowedActions.Any(action => !Enum.IsDefined(action)))
+            {
+                throw new ArgumentException("Allowed actions must contain only defined resource actions.", nameof(allowedActions));
+            }
+
             if (expiresAt <= validFrom)
             {
                 throw new ArgumentException("Expiration date cannot be before or equal to valid from date.");

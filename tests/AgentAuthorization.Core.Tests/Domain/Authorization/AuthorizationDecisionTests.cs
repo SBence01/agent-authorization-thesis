@@ -17,6 +17,11 @@ public sealed class AuthorizationDecisionTests
 
     [Theory]
     [InlineData(AuthorizationReason.NoMatchingGrant)]
+    [InlineData(AuthorizationReason.AgentMismatch)]
+    [InlineData(AuthorizationReason.WorkflowMismatch)]
+    [InlineData(AuthorizationReason.ActionNotAllowed)]
+    [InlineData(AuthorizationReason.ResourceOutOfScope)]
+    [InlineData(AuthorizationReason.GrantNotYetValid)]
     [InlineData(AuthorizationReason.GrantExpired)]
     [InlineData(AuthorizationReason.GrantRevoked)]
     public void Deny_WithValidReason_ShouldReturnDeniedDecision(AuthorizationReason reason)
