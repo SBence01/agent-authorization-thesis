@@ -18,13 +18,30 @@ public sealed class AuthorizationEngineTests
 
     private static readonly Guid OtherId = Guid.Parse("00000000-0000-0000-0000-000000000005");
 
+    private static readonly Guid ProjectId = Guid.Parse("00000000-0000-0000-0000-000000000006");
+
+    private static readonly Guid OtherProjectId = Guid.Parse("00000000-0000-0000-0000-000000000007");
+
     private static readonly DateTimeOffset ValidFrom = new(2026, 11, 17, 10, 0, 0, TimeSpan.Zero);
 
     private static readonly DateTimeOffset ExpiresAt = ValidFrom.AddHours(1);
 
     private static readonly DateTimeOffset CurrentTime = ValidFrom.AddMinutes(30);
 
-    private readonly AuthorizationEngine _engine = new(new ResourceScopeEvaluator());
+    private readonly AuthorizationEngine _engine;
+
+    public AuthorizationEngineTests()
+    {
+        var resourceProjects = ImmutableDictionary<Guid, Guid>.Empty
+            .Add(ResourceId, ProjectId)
+            .Add(OtherId, OtherProjectId);
+
+        var catalog = new ResourceCatalog(resourceProjects);
+
+        var scopeEvaluator = new ResourceScopeEvaluator(catalog);
+
+        _engine = new AuthorizationEngine(scopeEvaluator);
+    }
 
     [Fact]
     public void Authorize_WhenAllConstaintsMatch_ShouldAllow()
@@ -120,11 +137,43 @@ public sealed class AuthorizationEngineTests
     }
 
     [Fact]
-    public void Authorize_WithUnsupportedProjectScope_ShouldDeny()
+    public void Authorize_WhenResourceBelongsToGrantedProject_ShouldAllow()
     {
         //Arrange
-        var grant = CreateGrant(new ProjectScope(OtherId));
+        var grant = CreateGrant(new ProjectScope(ProjectId));
         var request = CreateRequest();
+
+        //Act
+        var decision = _engine.Authorize(grant, request, CurrentTime);
+
+        //Assert
+        Assert.True(decision.IsAllowed);
+        Assert.Equal(AuthorizationReason.Allowed, decision.Reason);
+    }
+
+    [Fact]
+    public void Authorize_WhenResourceBelongsToOtherProject_ShouldDeny()
+    {
+        //Arrange
+        var grant = CreateGrant(new ProjectScope(ProjectId));
+        var request = CreateRequest() with { ResourceId = OtherId };
+
+        //Act
+        var decision = _engine.Authorize(grant, request, CurrentTime);
+
+        //Assert
+        Assert.False(decision.IsAllowed);
+        Assert.Equal(AuthorizationReason.ResourceOutOfScope, decision.Reason);
+    }
+
+    [Fact]
+    public void Authorize_WithProjectScopeAndUnknownResource_ShouldeDeny()
+    {
+        //Arrange
+        var unknownResourceId = Guid.Parse("00000000-0000-0000-0000-000000000008");
+
+        var grant = CreateGrant(new ProjectScope(ProjectId));
+        var request = CreateRequest() with { ResourceId = unknownResourceId };
 
         //Act
         var decision = _engine.Authorize(grant, request, CurrentTime);
