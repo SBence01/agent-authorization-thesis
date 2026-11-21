@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\AgentAuthorization.Core\AgentAuthorization.Core.csproj" />
+    <ProjectReference Include="..\..\src\AgentAuthorization.Infrastructure\AgentAuthorization.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
