@@ -184,4 +184,70 @@ public sealed class GrantTests
             now,
             now.AddHours(1)));
     }
+
+    [Fact]
+    public void Constructor_ShouldCreateNonRevokedGrant()
+    {
+        //Act
+        var grant = CreateGrantForRevocation();
+
+        //Assert
+        Assert.False(grant.IsRevoked);
+    }
+
+    [Fact]
+    public void Revoke_ShouldMarkGrantAsRevoked()
+    {
+        //Arrange
+        var grant = CreateGrantForRevocation();
+
+        //Act
+        grant.Revoke();
+
+        //Assert
+        Assert.True(grant.IsRevoked);
+    }
+
+    [Fact]
+    public void Revoke_WhenCalledRepeatedly_ShouldKeepGrantRevoked()
+    {
+        //Arrange
+        var grant = CreateGrantForRevocation();
+        grant.Revoke();
+
+        //Act
+        grant.Revoke();
+
+        //Assert
+        Assert.True(grant.IsRevoked);
+    }
+
+    [Fact]
+    public void IsRevoked_Setter_ShouldBePrivate()
+    {
+        //Arrange
+        var property = typeof(Grant).GetProperty(nameof(Grant.IsRevoked));
+
+        //Assert
+        Assert.NotNull(property);
+
+        var setter = property.GetSetMethod(nonPublic: true);
+
+        Assert.NotNull(setter);
+        Assert.True(setter.IsPrivate, "Revocation state must only be changed inside Grant.");
+    }
+
+    private static Grant CreateGrantForRevocation()
+    {
+        var testTime = DateTimeOffset.UtcNow;
+
+        return new Grant(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            ImmutableHashSet.Create(ResourceAction.Read),
+            new ProjectScope(Guid.NewGuid()),
+            testTime,
+            testTime.AddHours(1));
+    }
 }

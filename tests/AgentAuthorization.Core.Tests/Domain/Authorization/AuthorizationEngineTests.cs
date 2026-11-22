@@ -205,6 +205,28 @@ public sealed class AuthorizationEngineTests
         Assert.Equal(expectedReason, decision.Reason);
     }
 
+    [Fact]
+    public void Authorize_AfterGrantIsRevoked_ShouldDenyWithGrantRevoked()
+    {
+        //Arrange
+        var grant = CreateGrant();
+        var request = CreateRequest();
+
+        var beforeRevocation = _engine.Authorize(grant, request, CurrentTime);
+
+        //Act
+        grant.Revoke();
+
+        var afterRevocation = _engine.Authorize(grant, request, CurrentTime);
+
+        //Assert
+        Assert.True(beforeRevocation.IsAllowed);
+        Assert.Equal(AuthorizationReason.Allowed, beforeRevocation.Reason);
+
+        Assert.False(afterRevocation.IsAllowed);
+        Assert.Equal(AuthorizationReason.GrantRevoked, afterRevocation.Reason);
+    }
+
     private static Grant CreateGrant(ResourceScope? scope = null)
     {
         return new Grant(

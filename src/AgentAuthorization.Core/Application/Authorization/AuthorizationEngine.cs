@@ -40,6 +40,11 @@ public class AuthorizationEngine
             return AuthorizationDecision.Deny(AuthorizationReason.ResourceOutOfScope);
         }
 
+        if (grant.IsRevoked)
+        {
+            return AuthorizationDecision.Deny(AuthorizationReason.GrantRevoked);
+        }
+
         if (currentTime < grant.ValidFrom)
         {
             return AuthorizationDecision.Deny(AuthorizationReason.GrantNotYetValid);

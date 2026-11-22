@@ -7,4 +7,5 @@ public interface IGrantStore
     void AddGrant(Grant grant);
     Grant? GetById(Guid grantId);
     IReadOnlyCollection<Grant> GetByAgentId(Guid agentId);
+    bool RevokeGrant(Guid grantId);
 }

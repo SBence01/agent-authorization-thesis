@@ -36,5 +36,25 @@ namespace AgentAuthorization.Infrastructure.Grants
 
             return _grants.Values.Where(g => g.AgentId == agentId).ToList();
         }
+
+        public bool RevokeGrant(Guid grantId)
+        {
+            if (grantId == Guid.Empty)
+            {
+                return false;
+            }
+
+            if (!_grants.TryGetValue(grantId, out var grant))
+            {
+                return false;
+            }
+
+            if (!grant.IsRevoked)
+            {
+                grant.Revoke();
+            }
+
+            return true;
+        }
     }
 }

@@ -235,6 +235,121 @@ public sealed class InMemoryGrantStoreTests
         Assert.Empty(secondStore.GetByAgentId(AgentA));
     }
 
+    [Fact]
+    public void RevokeGrant_WithExistingGrant_ShouldRevokeStoredGrant()
+    {
+        //Arrange
+        IGrantStore store = new InMemoryGrantStore();
+        store.AddGrant(CreateGrant(GrantA, AgentA));
+
+        //Act
+        var result = store.RevokeGrant(GrantA);
+
+        //Assert
+        Assert.True(result);
+
+        var storedGrant = store.GetById(GrantA);
+        Assert.NotNull(storedGrant);
+        Assert.True(storedGrant.IsRevoked);
+
+        var agentsGrant = Assert.Single(store.GetByAgentId(AgentA));
+        Assert.Equal(GrantA, agentsGrant.GrantId);
+        Assert.True(agentsGrant.IsRevoked);
+    }
+
+    [Fact]
+    public void RevokeGrant_WithUnknownGrantId_ShouldReturnFalse()
+    {
+        //Arrange
+        IGrantStore store = new InMemoryGrantStore();
+        var existingGrant = CreateGrant(GrantA, AgentA);
+        store.AddGrant(existingGrant);
+
+        //Act
+        var result = store.RevokeGrant(GrantB);
+
+        //Assert
+        Assert.False(result);
+        Assert.False(existingGrant.IsRevoked);
+    }
+
+    [Fact]
+    public void RevokeGrant_WithEmptyGrantId_ShouldReturnFalse()
+    {
+        //Arrange
+        IGrantStore store = new InMemoryGrantStore();
+        var existingGrant = CreateGrant(GrantA, AgentA);
+        store.AddGrant(existingGrant);
+
+        //Act
+        var result = store.RevokeGrant(Guid.Empty);
+
+        //Assert
+        Assert.False(result);
+        Assert.False(existingGrant.IsRevoked);
+    }
+
+    [Fact]
+    public void RevokeGrant_WhenAlreadyRevoked_ShouldReturnTrue()
+    {
+        //Arrange
+        IGrantStore store = new InMemoryGrantStore();
+        store.AddGrant(CreateGrant(GrantA, AgentA));
+        store.RevokeGrant(GrantA);
+
+        //Act
+        var result = store.RevokeGrant(GrantA);
+
+        //Assert
+        Assert.True(result);
+
+        var storedGrant = store.GetById(GrantA);
+        Assert.NotNull(storedGrant);
+        Assert.True(storedGrant.IsRevoked);
+    }
+
+    [Fact]
+    public void RevokeGrant_ShouldLeaveOtherGrantsActive()
+    {
+        //Arrange
+        IGrantStore store = new InMemoryGrantStore();
+
+        var firstGrant = CreateGrant(GrantA, AgentA);
+        var secondGrant = CreateGrant(GrantB, AgentA);
+
+        store.AddGrant(firstGrant);
+        store.AddGrant(secondGrant);
+
+        //Act
+        store.RevokeGrant(GrantA);
+
+        //Assert
+        Assert.True(firstGrant.IsRevoked);
+        Assert.False(secondGrant.IsRevoked);
+    }
+
+    [Fact]
+    public void AddGrant_WithRevokedGrantId_ShouldRejectReplacement()
+    {
+        //Arrange
+        IGrantStore store = new InMemoryGrantStore();
+
+        store.AddGrant(CreateGrant(GrantA, AgentA));
+        store.RevokeGrant(GrantA);
+
+        var replacementGrant = CreateGrant(GrantA, AgentA);
+
+        //Act
+        Action act = () => store.AddGrant(replacementGrant);
+
+        //Assert
+        Assert.Throws<InvalidOperationException>(act);
+
+        var storedGrant = store.GetById(GrantA);
+        Assert.NotNull(storedGrant);
+        Assert.True(storedGrant.IsRevoked);
+    }
+
     private static Grant CreateGrant(Guid grantId, Guid agentId)
     {
         return new Grant(

@@ -14,6 +14,8 @@ namespace AgentAuthorization.Core.Domain.Grants
 
         public DateTimeOffset ExpiresAt { get; }
 
+        public bool IsRevoked { get; private set; }
+
         public Grant(Guid grantId, Guid agentId, Guid workflowId, ImmutableHashSet<ResourceAction> allowedActions, ResourceScope scope, DateTimeOffset validFrom, DateTimeOffset expiresAt)
         {
             if (grantId == Guid.Empty)
@@ -58,6 +60,12 @@ namespace AgentAuthorization.Core.Domain.Grants
             Scope = scope;
             ValidFrom = validFrom;
             ExpiresAt = expiresAt;
+            IsRevoked = false;
+        }
+
+        public void Revoke()
+        {
+            IsRevoked = true;
         }
     }
 }
