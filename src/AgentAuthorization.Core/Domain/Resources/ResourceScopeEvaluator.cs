@@ -26,5 +26,22 @@
                 _ => false
             };
         }
+
+        public bool IsSubsetOf(ResourceScope childScope, ResourceScope parentScope)
+        {
+            return (childScope, parentScope) switch
+            {
+                (ResourceSetScope child, ResourceSetScope parent)
+                    => child.ResourceIds.IsSubsetOf(parent.ResourceIds),
+
+                (ResourceSetScope child, ProjectScope parent)
+                    => child.ResourceIds.All(id => _resourceCatalog.GetProjectId(id) == parent.ProjectId),
+
+                (ProjectScope child, ProjectScope parent)
+                    => child.ProjectId == parent.ProjectId,
+
+                _ => false
+            };
+        }
     }
 }

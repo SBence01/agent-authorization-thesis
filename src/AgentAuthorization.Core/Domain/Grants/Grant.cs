@@ -16,7 +16,11 @@ namespace AgentAuthorization.Core.Domain.Grants
 
         public bool IsRevoked { get; private set; }
 
-        public Grant(Guid grantId, Guid agentId, Guid workflowId, ImmutableHashSet<ResourceAction> allowedActions, ResourceScope scope, DateTimeOffset validFrom, DateTimeOffset expiresAt)
+        public Guid? ParentGrantId { get; }
+
+        public bool CanDelegate { get; }
+
+        public Grant(Guid grantId, Guid agentId, Guid workflowId, ImmutableHashSet<ResourceAction> allowedActions, ResourceScope scope, DateTimeOffset validFrom, DateTimeOffset expiresAt, Guid? parentGrantId = null, bool canDelegate = false)
         {
             if (grantId == Guid.Empty)
             {
@@ -53,6 +57,21 @@ namespace AgentAuthorization.Core.Domain.Grants
                 throw new ArgumentException("Expiration date cannot be before or equal to valid from date.");
             }
 
+            if (parentGrantId == Guid.Empty)
+            {
+                throw new ArgumentException("ParentGrantId cannot be empty.", nameof(parentGrantId));
+            }
+
+            if (parentGrantId == grantId)
+            {
+                throw new ArgumentException("ParentGrantId cannot be the same as grantId", nameof(parentGrantId));
+            }
+
+            if (parentGrantId != null && canDelegate == true)
+            {
+                throw new ArgumentException("Can delegate cannot be true if there is a parent grant.", nameof(canDelegate));
+            }
+
             GrantId = grantId;
             AgentId = agentId;
             WorkflowId = workflowId;
@@ -61,6 +80,8 @@ namespace AgentAuthorization.Core.Domain.Grants
             ValidFrom = validFrom;
             ExpiresAt = expiresAt;
             IsRevoked = false;
+            ParentGrantId = parentGrantId;
+            CanDelegate = canDelegate;
         }
 
         public void Revoke()

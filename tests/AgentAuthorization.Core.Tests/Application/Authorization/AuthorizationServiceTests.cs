@@ -1,4 +1,5 @@
 ﻿using AgentAuthorization.Core.Application.Authorization;
+using AgentAuthorization.Core.Application.Grants;
 using AgentAuthorization.Core.Domain.Authorization;
 using AgentAuthorization.Core.Domain.Grants;
 using AgentAuthorization.Core.Domain.Resources;
@@ -34,6 +35,7 @@ public sealed class AuthorizationServiceTests
     private readonly InMemoryGrantStore _grantStore = new();
     private readonly AuthorizationEngine _engine;
     private readonly AuthorizationService _service;
+    private readonly GrantDelegationValidator _validator;
 
     public AuthorizationServiceTests()
     {
@@ -43,19 +45,26 @@ public sealed class AuthorizationServiceTests
         var evaluator = new ResourceScopeEvaluator(catalog);
 
         _engine = new AuthorizationEngine(evaluator);
-        _service = new AuthorizationService(_grantStore, _engine);
+        _validator = new GrantDelegationValidator(evaluator);
+        _service = new AuthorizationService(_grantStore, _engine, _validator);
     }
 
     [Fact]
     public void Constructor_WithNullGrantStore_ShouldThrow()
     {
-        Assert.Throws<ArgumentNullException>(() => new AuthorizationService(null!, _engine));
+        Assert.Throws<ArgumentNullException>(() => new AuthorizationService(null!, _engine, _validator));
     }
 
     [Fact]
     public void Constructor_WithNullAuthorizationEngine_ShouldThrow()
     {
-        Assert.Throws<ArgumentNullException>(() => new AuthorizationService(_grantStore, null!));
+        Assert.Throws<ArgumentNullException>(() => new AuthorizationService(_grantStore, null!, _validator));
+    }
+
+    [Fact]
+    public void Constructor_WithNullDelegationValidator_ShouldThrow()
+    {
+        Assert.Throws<ArgumentNullException>(() => new AuthorizationService(_grantStore, _engine, null!));
     }
 
     [Fact]

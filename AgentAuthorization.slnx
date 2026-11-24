@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/AgentAuthorization.Core/AgentAuthorization.Core.csproj" />
+    <Project Path="src/AgentAuthorization.Demo/AgentAuthorization.Demo.csproj" />
     <Project Path="src/AgentAuthorization.Infrastructure/AgentAuthorization.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
