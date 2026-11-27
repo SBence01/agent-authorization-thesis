@@ -27,6 +27,9 @@ public sealed class PolicyEnforcementPoint
 
         var result = _authorizationService.Authorize(request, currentTime);
 
+        //record both allowed and denied decisions before any resource operation
+        //if auditing throws, execution most not proceed
+        //an ALLOW entry records authorization, not successful execution
         var entry = new AuthorizationAuditEntry(currentTime, request, result);
         _auditSink.Write(entry);
 
@@ -35,6 +38,7 @@ public sealed class PolicyEnforcementPoint
             return result;
         }
 
+        //execute the same request that was authorized
         _executor.Execute(request);
 
         return result;

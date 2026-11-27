@@ -15,6 +15,8 @@ public class AuthorizationEngine
         _resourceScopeEvaluator = resourceScopeEvaluator;
     }
 
+    //Evaluates one grant independently and returns its first failed check.
+    //Choosing between multiple permissions is the responsibility of the AuthorizationService
     public AuthorizationDecision Authorize(Grant grant, AuthorizationRequest request, DateTimeOffset currentTime)
     {
         ArgumentNullException.ThrowIfNull(grant);
@@ -45,6 +47,7 @@ public class AuthorizationEngine
             return AuthorizationDecision.Deny(AuthorizationReason.GrantRevoked);
         }
 
+        //The validity interval includes ValidFrom but excludes ExpiresAt.
         if (currentTime < grant.ValidFrom)
         {
             return AuthorizationDecision.Deny(AuthorizationReason.GrantNotYetValid);

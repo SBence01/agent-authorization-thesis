@@ -7,6 +7,7 @@ namespace AgentAuthorization.Demo;
 
 internal sealed class DemoResourceOperationExecutor : IResourceOperationExecutor
 {
+    //Resource versions provide an observable effect for authorized operations
     private readonly Dictionary<Guid, int> _versions;
 
     public int ExecutionCount { get; private set; }
@@ -46,6 +47,7 @@ internal sealed class DemoResourceOperationExecutor : IResourceOperationExecutor
                 throw new ArgumentOutOfRangeException(nameof(request), request.Action, "Unknown resource action.");
         }
 
+        //Count only operations that reach this point without throwing
         ExecutionCount++;
     }
 

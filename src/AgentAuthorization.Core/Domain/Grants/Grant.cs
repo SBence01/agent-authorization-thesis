@@ -67,6 +67,7 @@ namespace AgentAuthorization.Core.Domain.Grants
                 throw new ArgumentException("ParentGrantId cannot be the same as grantId", nameof(parentGrantId));
             }
 
+            //Delegation is limited to one level, a delegated grant cannot deleagte further.
             if (parentGrantId != null && canDelegate == true)
             {
                 throw new ArgumentException("Can delegate cannot be true if there is a parent grant.", nameof(canDelegate));
@@ -84,6 +85,7 @@ namespace AgentAuthorization.Core.Domain.Grants
             CanDelegate = canDelegate;
         }
 
+        //Recovation is permanent for this grant instance
         public void Revoke()
         {
             IsRevoked = true;

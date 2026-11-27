@@ -30,6 +30,7 @@ public sealed class GrantDelegationService
             return false;
         }
 
+        //Validate against the stored parent rather than a parent supplied by the caller
         var parent = _grantStore.GetById(child.ParentGrantId.Value);
         if (parent is null)
         {
@@ -41,6 +42,7 @@ public sealed class GrantDelegationService
             return false;
         }
 
+        //Persist the child only after all delegation checks have succeeded
         _grantStore.AddGrant(child);
         return true;
     }

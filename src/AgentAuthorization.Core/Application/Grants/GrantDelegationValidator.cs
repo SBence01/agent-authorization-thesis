@@ -19,6 +19,8 @@ public sealed class GrantDelegationValidator
         ArgumentNullException.ThrowIfNull(parent);
         ArgumentNullException.ThrowIfNull(child);
 
+        //The caller must supply the acting agent's identity from a trusted context
+        //Matching the ID establishes ownership here, it does not authenticate the caller.
         if (parent.AgentId != delegatingAgentId)
         {
             return false;
@@ -44,6 +46,7 @@ public sealed class GrantDelegationValidator
             return false;
         }
 
+        //Delegation may preserve or narrow permissions, but must never expand them.
         if (!child.AllowedActions.IsSubsetOf(parent.AllowedActions))
         {
             return false;
@@ -69,6 +72,8 @@ public sealed class GrantDelegationValidator
             return false;
         }    
 
+        //The parent must be valid now, the child may start later
+        //provided its entire validity interval stays within the parent's interval.
         if (currentTime < parent.ValidFrom || currentTime >= parent.ExpiresAt)
         {
             return false;

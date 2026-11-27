@@ -28,10 +28,13 @@ public sealed class AuthorizationService
 
         var grants = _grantStore.GetByAgentId(request.AgentId);
 
+        //any independently sufficient grant may authorize the request
+        //permissions from different grants are not combined
         foreach (var grant in grants)
         {
             var decision = _authorizationEngine.Authorize(grant, request, currentTime);
 
+            //a rejected grant must not prevent another grant from authorizing request
             if (!decision.IsAllowed)
             {
                 continue;
@@ -42,12 +45,16 @@ public sealed class AuthorizationService
                 return decision;
             }
 
+            //revalidate the parent on every delegated request
+            //parent revocation or expiry blocks access without modifying the child grant
             var parent = _grantStore.GetById(grant.ParentGrantId.Value);
             if (parent is null)
             {
                 continue;
             }
 
+            //here the validator checks the stored parent-child relationship
+            //passing the parent's owner ID does not authenticate a new delegation request
             if (!_delegationValidator.CanDelegate(parent, grant, parent.AgentId, currentTime))
             {
                 continue;

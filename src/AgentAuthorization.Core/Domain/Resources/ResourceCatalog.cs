@@ -25,6 +25,7 @@ public sealed class ResourceCatalog
         _resourceProjects = resourceProjects;
     }
 
+    //A missing mapping means the resource's project membership cannot be established.
     public Guid? GetProjectId(Guid resourceId)
     {
         if (_resourceProjects.TryGetValue(resourceId, out var projectId))

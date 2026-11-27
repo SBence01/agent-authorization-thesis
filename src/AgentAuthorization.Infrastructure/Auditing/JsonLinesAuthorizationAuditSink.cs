@@ -27,6 +27,7 @@ public sealed class JsonLinesAuthorizationAuditSink : IAuthorizationAuditSink
 
         var json = JsonSerializer.Serialize(entry, _serializerOptions);
 
+        //Append one JSON object per line and let write failures propagate to the caller
         File.AppendAllText(_filePath, json + Environment.NewLine);
     }
 }

@@ -17,16 +17,22 @@
                 return false;
             }
 
+            //Explicit resource membership does not require catalog registration
+            //Project membership must be established through the catalog
             return scope switch
             {
                 ResourceSetScope resourceSetScope => resourceSetScope.ResourceIds.Contains(resourceId),
 
                 ProjectScope projectScope => _resourceCatalog.GetProjectId(resourceId) == projectScope.ProjectId,
 
+                //Null and unsupported scopes do not authorize access
                 _ => false
             };
         }
 
+        //Checks whether the child scope stays within the parent's resource boundaries.
+        //A project scope cannot be derived from an explicit resourse set even
+        //if that set contains every currently registered resource in the project.
         public bool IsSubsetOf(ResourceScope childScope, ResourceScope parentScope)
         {
             return (childScope, parentScope) switch

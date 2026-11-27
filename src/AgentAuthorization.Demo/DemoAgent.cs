@@ -29,8 +29,10 @@ internal sealed class DemoAgent
 
     public AuthorizationDecision Execute(ResourceAction action, Guid resourceId)
     {
+        //Bind each request to the identity and workflow configured by the demo host
         var request = new AuthorizationRequest(_agentId, action, resourceId, _workflowId);
 
+        //read the clock for every request so simulated time changes affect authorization
         var currentTime = _clock();
 
         return _pep.Execute(request, currentTime);
